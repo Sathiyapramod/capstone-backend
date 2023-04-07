@@ -59,18 +59,8 @@ workflow.put("/:id", async (req, res) => {
     grossTotal,
     gst,
     NetAmount,
+    POItems,
   } = req.body;
-
-  console.log(
-    isApproved,
-    isScrutinized,
-    isAuthorized,
-    vendorName,
-    grossTotal,
-    gst,
-    NetAmount
-  );
-
   const checkUserinDB = await client
     .db("capstone")
     .collection("workflow")
@@ -89,6 +79,25 @@ workflow.put("/:id", async (req, res) => {
           { $push: { workflow: req.body } }
         );
       console.log(updateWorkflow);
+      const POUpdation = await client
+        .db("capstone")
+        .collection("purchase")
+        .updateOne(
+          { vendorName },
+          {
+            $set: {
+              isApproved,
+              isScrutinized,
+              isAuthorized,
+              vendorName,
+              grossTotal,
+              gst,
+              NetAmount,
+              POItems,
+            },
+          }
+        );
+      console.log(POUpdation);
       updateWorkflow
         ? res.send({ message: "PO sent for further Authorization !" })
         : res.status(401).send({ message: "Failed to send for authorizing" });
@@ -119,12 +128,16 @@ workflow.put("/update/:id", async (req, res) => {
         { _id: new ObjectId(id) },
         {
           $pull: {
-            workflow: { vendorName,grossTotal, gst, NetAmount },
+            workflow: { vendorName, grossTotal, gst, NetAmount },
           },
         }
       );
     console.log(updateDetailforSender);
-    updateDetailforSender ? res.send({message:"Updated in Senders' workflow"}) : res.status(401).send({message:"failed to update in senders' workflow"})
+    updateDetailforSender
+      ? res.send({ message: "Updated in Senders' workflow" })
+      : res
+          .status(401)
+          .send({ message: "failed to update in senders' workflow" });
   }
 });
 

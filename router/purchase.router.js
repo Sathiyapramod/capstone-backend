@@ -28,40 +28,33 @@ purchase.get("/:id", async (req, res) => {
 
 purchase.post("/", async (req, res) => {
   const {
-    vendorName,
-    contactNo,
-    address,
-    gstNumber,
-    POItems,
+    isApproved,
+    isScrutinized,
+    isAuthorized,
     date,
+    vendorName,
     grossTotal,
     gst,
-    NetTotal,
+    NetAmount,
+    POItems,
   } = req.body;
 
-  if (
-    vendorName == null ||
-    contactNo == null ||
-    address == "" ||
-    address == null ||
-    gstNumber == null ||
-    POItems == null
-  )
+  if (vendorName == null || POItems == null || NetAmount == 0)
     res.status(401).send({ message: "Invalid entries. pls check again" });
   else {
     const newPurchaseOrder = await client
       .db("capstone")
       .collection("purchase")
       .insertOne({
+        isApproved,
+        isScrutinized,
+        isAuthorized,
+        date : new Date(date),
         vendorName,
-        contactNo,
-        address,
-        gstNumber,
-        POItems,
-        date: new Date(date),
         grossTotal,
         gst,
-        NetTotal,
+        NetAmount,
+        POItems,
       });
     newPurchaseOrder
       ? res.send({ message: "New PO Created" })
@@ -88,5 +81,4 @@ purchase.delete("/:id", async (req, res) => {
   }
 });
 
-
-export default purchase
+export default purchase;

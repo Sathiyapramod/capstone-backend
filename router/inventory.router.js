@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 const inventory = express.Router();
 
 //READ inventory
+
 inventory.get("/", async (req, res) => {
   const getAllInventory = await client
     .db("capstone")
@@ -15,24 +16,33 @@ inventory.get("/", async (req, res) => {
     ? res.send(getAllInventory)
     : res.status(401).send({ message: "failed to load the data" });
 });
+
 inventory.get("/:id", async (req, res) => {
   const { id } = req.params;
-  const getInventoryfromDB = await client
+  const checkIdInsideDB = await client
     .db("capstone")
     .collection("inventory")
     .findOne({ _id: new ObjectId(id) });
-  console.log(getInventoryfromDB);
-  getInventoryfromDB
-    ? res.send(getInventoryfromDB)
-    : res.status(401).send({ message: "failed to load the data" });
+  if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID " });
+  else {
+    const getInventoryfromDB = await client
+      .db("capstone")
+      .collection("inventory")
+      .findOne({ _id: new ObjectId(id) });
+    console.log(getInventoryfromDB);
+    getInventoryfromDB
+      ? res.send(getInventoryfromDB)
+      : res.status(401).send({ message: "failed to load the data" });
+  }
 });
 //CREATE inventory
 
 inventory.post("/", async (req, res) => {
-  const { name, units, totalQty, rate } = req.body;
+  const { name, units, HSNCode, totalQty, rate } = req.body;
   if (
     units == null ||
     units == "" ||
+    HSNCode == null ||
     totalQty == null ||
     rate == null
   )
@@ -44,6 +54,7 @@ inventory.post("/", async (req, res) => {
       .insertOne({
         name,
         units,
+        HSNCode,
         billedQty: 0,
         totalQty: Number(totalQty),
         availableQty: Number(totalQty),
@@ -56,13 +67,11 @@ inventory.post("/", async (req, res) => {
   }
 });
 
-
 //UPDATE inventory
 
 inventory.put("/:id", async (req, res) => {
   //considered as rate can be updated
-  //totalQty will be updated while making stock changes 
-
+  //totalQty will be updated while making stock changes
 
   const { rate } = req.body;
   const { id } = req.params;

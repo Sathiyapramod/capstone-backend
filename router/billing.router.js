@@ -21,11 +21,11 @@ billing.get("/", async (req, res) => {
 
 billing.get("/:billnumber", async (req, res) => {
   const { billnumber } = req.params;
-  //   console.log(billnumber);
+  console.log(billnumber);
   const getBillfromDB = await client
     .db("capstone")
     .collection("bills")
-    .find({ billnumber });
+    .findOne({ _id: new ObjectId(billnumber) });
   getBillfromDB
     ? res.send(getBillfromDB)
     : res.status(401).send({ message: "failed to load billed data" });
@@ -83,17 +83,55 @@ billing.post("/", async (req, res) => {
     : res.status(401).send({ message: "Failed to create new bill" });
 });
 
-
 //DELETE a bill
 
-billing.delete("/:id", async(req,res)=>{
-  const {id} = req.params;
-  const checkIdInsideDB = await client.db("capstone").collection("bills").findOne({_id: new ObjectId(id)})
-  if(!checkIdInsideDB) res.status(401).send({message:"Invalid ID . Try again"})
+billing.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  const checkIdInsideDB = await client
+    .db("capstone")
+    .collection("bills")
+    .findOne({ _id: new ObjectId(id) });
+  if (!checkIdInsideDB)
+    res.status(401).send({ message: "Invalid ID . Try again" });
   else {
-    const deleteBillfromDB = await client.db("capstone").collection("bills").deleteOne({_id : new ObjectId(id)});
-    deleteBillfromDB.deletedCount == 1 ? res.send({message:"Bill Deleted Successfully"}) : res.status(401).send({message:"Failed to delete Bill"})
+    const deleteBillfromDB = await client
+      .db("capstone")
+      .collection("bills")
+      .deleteOne({ _id: new ObjectId(id) });
+    deleteBillfromDB.deletedCount == 1
+      ? res.send({ message: "Bill Deleted Successfully" })
+      : res.status(401).send({ message: "Failed to delete Bill" });
   }
-})
+});
+
+//UPDATE a bill for setting payment status
+
+billing.put("/:id", async (req, res) => {
+  //Only payment status will be uploaded as PAID
+  // No other alterations will be made on the database stored
+  const { id } = req.params;
+  console.log(id);
+  const checkIdInsideDB = await client
+    .db("capstone")
+    .collection("bills")
+    .findOne({ _id: new ObjectId(id) });
+  console.log(checkIdInsideDB);
+  if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID number" });
+  else {
+    const updateBillInsideDB = await client
+      .db("capstone")
+      .collection("bills")
+      .updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: { billingStatus: "paid" },
+        }
+      );
+    console.log(updateBillInsideDB);
+    updateBillInsideDB.modifiedCount != 0
+      ? res.status({ message: "Bill Status updated Successfully" })
+      : res.status(401).send({ message: "Failed to Perform Payment Updation" });
+  }
+});
 
 export default billing;
