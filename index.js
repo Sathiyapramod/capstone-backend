@@ -20,7 +20,7 @@ app.use("/customers", customers);
 app.use("/purchase", purchase);
 app.use("/workflow", workflow);
 
-const PORT = 4000;
+const PORT = process.env.PORT;
 const MONGO_URL = process.env.MONGO_URL;
 export const client = new MongoClient(MONGO_URL); //dialing operation
 await client.connect(); //This is a calling operation
