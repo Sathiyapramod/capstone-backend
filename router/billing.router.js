@@ -1,6 +1,7 @@
 import { client } from "../index.js";
 import express from "express";
 import { ObjectId } from "mongodb";
+import auth from '../middleware/auth.js';
 
 const billing = express.Router();
 
@@ -8,7 +9,8 @@ const billing = express.Router();
 //Only Manager/Admin level access can be provided for doing the same
 
 //GET all billed data
-billing.get("/", async (req, res) => {
+
+billing.get("/", auth, async (req, res) => {
   const getBilledData = await getAllBills();
   getBilledData
     ? res.send(getBilledData)
@@ -17,7 +19,7 @@ billing.get("/", async (req, res) => {
 
 //GET Bill by id
 
-billing.get("/:billnumber", async (req, res) => {
+billing.get("/:billnumber", auth,  async (req, res) => {
   const { billnumber } = req.params;
   console.log(billnumber);
   const getBillfromDB = await getBillByid(billnumber);
@@ -27,7 +29,7 @@ billing.get("/:billnumber", async (req, res) => {
 });
 
 //CREATE new Bill
-billing.post("/", async (req, res) => {
+billing.post("/", auth, async (req, res) => {
   const {
     customerName,
     billMode,
@@ -66,7 +68,7 @@ billing.post("/", async (req, res) => {
 
 //DELETE a bill
 
-billing.delete("/:id", async (req, res) => {
+billing.delete("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const checkIdInsideDB = await client
     .db("capstone")
@@ -84,7 +86,7 @@ billing.delete("/:id", async (req, res) => {
 
 //UPDATE a bill for setting payment status
 
-billing.put("/:id", async (req, res) => {
+billing.put("/:id", auth, async (req, res) => {
   //Only payment status will be uploaded as PAID
   // No other alterations will be made on the database stored
   const { id } = req.params;

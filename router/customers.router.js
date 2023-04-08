@@ -1,6 +1,7 @@
 import express from "express";
 import { client } from "../index.js";
 import { ObjectId } from "mongodb";
+import auth from "../middleware/auth.js";
 const customers = express.Router();
 
 //CREATE customer
@@ -34,14 +35,14 @@ customers.post("/", async (req, res) => {
 
 //READ customers
 
-customers.get("/", async (req, res) => {
+customers.get("/", auth, async (req, res) => {
   const getCustomers = await getAllCustomers();
   getCustomers
     ? res.send(getCustomers)
     : res.status(401).send({ message: "Failed to load customers" });
 });
 
-customers.get("/:id", async (req, res) => {
+customers.get("/:id", auth, async (req, res) => {
   const { id } = req.params;
 
   const checkIdInsideDB = await getCustomerbyId(id);
@@ -51,7 +52,7 @@ customers.get("/:id", async (req, res) => {
     : res.status(401).send({ message: "failed to load customer data" });
 });
 
-customers.put("/:id", async (req, res) => {
+customers.put("/:id", auth, async (req, res) => {
   //assumed only customer address can be changed
   const { id } = req.params;
   const { address } = req.body;
@@ -70,7 +71,7 @@ customers.put("/:id", async (req, res) => {
   }
 });
 
-customers.delete("/:id", async (req, res) => {
+customers.delete("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const checkIdInsideDB = await client
     .db("capstone")

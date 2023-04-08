@@ -1,19 +1,20 @@
 import { client } from "../index.js";
 import express from "express";
 import { ObjectId } from "mongodb";
+import auth from "../middleware/auth.js";
 
 const inventory = express.Router();
 
 //READ inventory
 
-inventory.get("/", async (req, res) => {
+inventory.get("/", auth, async (req, res) => {
   const getAllInventory = await GetAllInventory();
   getAllInventory
     ? res.send(getAllInventory)
     : res.status(401).send({ message: "failed to load the data" });
 });
 
-inventory.get("/:id", async (req, res) => {
+inventory.get("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const checkIdInsideDB = await GetInventoryById(id);
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID " });
@@ -25,9 +26,10 @@ inventory.get("/:id", async (req, res) => {
       : res.status(401).send({ message: "failed to load the data" });
   }
 });
+
 //CREATE inventory
 
-inventory.post("/", async (req, res) => {
+inventory.post("/", auth, async (req, res) => {
   const { name, units, HSNCode, totalQty, rate } = req.body;
   if (
     units == null ||
@@ -52,9 +54,10 @@ inventory.post("/", async (req, res) => {
   }
 });
 
+
 //UPDATE inventory
 
-inventory.put("/:id", async (req, res) => {
+inventory.put("/:id", auth, async (req, res) => {
   //considered as rate can be updated
   //totalQty will be updated while making stock changes
 
@@ -72,8 +75,10 @@ inventory.put("/:id", async (req, res) => {
   }
 });
 
+
 //DELETE inventory
-inventory.delete("/:id", async (req, res) => {
+
+inventory.delete("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const checkIdInsideDB = await client
     .db("capstone")
@@ -142,5 +147,5 @@ async function GetInventoryById(id) {
 }
 
 async function GetAllInventory() {
-  return await client.collection("inventory").find({}).toArray();
+  return await client.db("capstone").collection("inventory").find({}).toArray();
 }
