@@ -9,23 +9,18 @@ const billing = express.Router();
 
 //GET all billed data
 billing.get("/", async (req, res) => {
-  const getBilledData = await client
-    .db("capstone")
-    .collection("bills")
-    .find({})
-    .toArray();
+  const getBilledData = await getAllBills();
   getBilledData
     ? res.send(getBilledData)
     : res.status(401).send({ message: "failed to load billed Data" });
 });
 
+//GET Bill by id
+
 billing.get("/:billnumber", async (req, res) => {
   const { billnumber } = req.params;
   console.log(billnumber);
-  const getBillfromDB = await client
-    .db("capstone")
-    .collection("bills")
-    .findOne({ _id: new ObjectId(billnumber) });
+  const getBillfromDB = await getBillByid(billnumber);
   getBillfromDB
     ? res.send(getBillfromDB)
     : res.status(401).send({ message: "failed to load billed data" });
@@ -43,37 +38,23 @@ billing.post("/", async (req, res) => {
     gst,
     NetTotal,
   } = req.body;
-  const newBill = await client
-    .db("capstone")
-    .collection("bills")
-    .insertOne({
-      customerName,
-      billMode,
-      creditPeriod,
-      items,
-      grossTotal,
-      gst,
-      NetTotal,
-      date: new Date(date),
-    });
+  const newBill = await createNewBill(
+    customerName,
+    billMode,
+    creditPeriod,
+    items,
+    grossTotal,
+    gst,
+    NetTotal,
+    date
+  );
   // console.log(newBill);
 
   console.log(items);
 
   // Update Stock in DB
   for (let billItem in items) {
-    const updateIteminDB = await client
-      .db("capstone")
-      .collection("inventory")
-      .updateOne(
-        { name: items[billItem].name },
-        {
-          $inc: {
-            billedQty: Number(items[billItem].qty),
-            availableQty: -Number(items[billItem].qty),
-          },
-        }
-      );
+    const updateIteminDB = await updateStockinDB(items, billItem);
     console.log(updateIteminDB);
   }
   newBill
@@ -94,10 +75,7 @@ billing.delete("/:id", async (req, res) => {
   if (!checkIdInsideDB)
     res.status(401).send({ message: "Invalid ID . Try again" });
   else {
-    const deleteBillfromDB = await client
-      .db("capstone")
-      .collection("bills")
-      .deleteOne({ _id: new ObjectId(id) });
+    const deleteBillfromDB = await deleteBillByid(id);
     deleteBillfromDB.deletedCount == 1
       ? res.send({ message: "Bill Deleted Successfully" })
       : res.status(401).send({ message: "Failed to delete Bill" });
@@ -118,15 +96,7 @@ billing.put("/:id", async (req, res) => {
   console.log(checkIdInsideDB);
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID number" });
   else {
-    const updateBillInsideDB = await client
-      .db("capstone")
-      .collection("bills")
-      .updateOne(
-        { _id: new ObjectId(id) },
-        {
-          $set: { billingStatus: "paid" },
-        }
-      );
+    const updateBillInsideDB = await updatePaymentStatusinDB(id);
     console.log(updateBillInsideDB);
     updateBillInsideDB.modifiedCount != 0
       ? res.status({ message: "Bill Status updated Successfully" })
@@ -135,3 +105,73 @@ billing.put("/:id", async (req, res) => {
 });
 
 export default billing;
+
+async function updatePaymentStatusinDB(id) {
+  return await client
+    .db("capstone")
+    .collection("bills")
+    .updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: { billingStatus: "paid" },
+      }
+    );
+}
+
+async function deleteBillByid(id) {
+  return await client
+    .db("capstone")
+    .collection("bills")
+    .deleteOne({ _id: new ObjectId(id) });
+}
+
+async function updateStockinDB(items, billItem) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .updateOne(
+      { name: items[billItem].name },
+      {
+        $inc: {
+          billedQty: Number(items[billItem].qty),
+          availableQty: -Number(items[billItem].qty),
+        },
+      }
+    );
+}
+
+async function createNewBill(
+  customerName,
+  billMode,
+  creditPeriod,
+  items,
+  grossTotal,
+  gst,
+  NetTotal,
+  date
+) {
+  return await client
+    .db("capstone")
+    .collection("bills")
+    .insertOne({
+      customerName,
+      billMode,
+      creditPeriod,
+      items,
+      grossTotal,
+      gst,
+      NetTotal,
+      date: new Date(date),
+    });
+}
+
+async function getBillByid(billnumber) {
+  return await client
+    .db("capstone")
+    .collection("bills")
+    .findOne({ _id: new ObjectId(billnumber) });
+}
+
+async function getAllBills() {
+  return await client.db("capstone").collection("bills").find({}).toArray();
+}

@@ -20,15 +20,12 @@ customers.post("/", async (req, res) => {
   )
     res.status(401).send({ message: "Invalid inputs" });
   else {
-    const newCustomer = await client
-      .db("capstone")
-      .collection("customers")
-      .insertOne({
-        customerName,
-        contactNo,
-        address,
-        gstNumber,
-      });
+    const newCustomer = await createNewCustomer(
+      customerName,
+      contactNo,
+      address,
+      gstNumber
+    );
     newCustomer
       ? res.send({ message: "New customer created successfully" })
       : res.status(401).send({ message: "Failed to create customer" });
@@ -38,11 +35,7 @@ customers.post("/", async (req, res) => {
 //READ customers
 
 customers.get("/", async (req, res) => {
-  const getCustomers = await client
-    .db("capstone")
-    .collection("customers")
-    .find({})
-    .toArray();
+  const getCustomers = await getAllCustomers();
   getCustomers
     ? res.send(getCustomers)
     : res.status(401).send({ message: "Failed to load customers" });
@@ -51,10 +44,7 @@ customers.get("/", async (req, res) => {
 customers.get("/:id", async (req, res) => {
   const { id } = req.params;
 
-  const checkIdInsideDB = await client
-    .db("capstone")
-    .collection("customers")
-    .findOne({ _id: new ObjectId(id) });
+  const checkIdInsideDB = await getCustomerbyId(id);
 
   checkIdInsideDB
     ? res.send(checkIdInsideDB)
@@ -72,13 +62,7 @@ customers.put("/:id", async (req, res) => {
 
   if (!checkIdInsideDB) res.status(401).send({ message: "invalid Id" });
   else {
-    const updatedCustomer = await client
-      .db("capstone")
-      .collection("customers")
-      .findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        { $set: { address: address } }
-      );
+    const updatedCustomer = await updateCustomerAddressinDB(id, address);
     console.log(updatedCustomer);
     updatedCustomer
       ? res.send({ message: "data updated successfully" })
@@ -94,13 +78,48 @@ customers.delete("/:id", async (req, res) => {
     .findOne({ _id: new ObjectId(id) });
   if (!checkIdInsideDB) res.status(401).send({ message: "invalid Id" });
   else {
-    const deleteCustomer = await client
-      .db("capstone")
-      .collection("customers")
-      .deleteOne({ _id: new ObjectId(id) });
-    (deleteCustomer.deletedCount == 1 ) ? res.send({message:"Customer deleted successfully"}) : res.status(401).send({message:"failed to delete customer "})
+    const deleteCustomer = await deleteCustomerbyId(id);
+    deleteCustomer.deletedCount == 1
+      ? res.send({ message: "Customer deleted successfully" })
+      : res.status(401).send({ message: "failed to delete customer " });
   }
 });
 
-
 export default customers;
+
+async function deleteCustomerbyId(id) {
+  return await client
+    .db("capstone")
+    .collection("customers")
+    .deleteOne({ _id: new ObjectId(id) });
+}
+
+async function updateCustomerAddressinDB(id, address) {
+  return await client
+    .db("capstone")
+    .collection("customers")
+    .findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { address: address } }
+    );
+}
+
+async function getCustomerbyId(id) {
+  return await client
+    .db("capstone")
+    .collection("customers")
+    .findOne({ _id: new ObjectId(id) });
+}
+
+async function getAllCustomers() {
+  return await client.db("capstone").collection("customers").find({}).toArray();
+}
+
+async function createNewCustomer(customerName, contactNo, address, gstNumber) {
+  return await client.db("capstone").collection("customers").insertOne({
+    customerName,
+    contactNo,
+    address,
+    gstNumber,
+  });
+}

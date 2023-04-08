@@ -7,11 +7,7 @@ const inventory = express.Router();
 //READ inventory
 
 inventory.get("/", async (req, res) => {
-  const getAllInventory = await client
-    .db("capstone")
-    .collection("inventory")
-    .find({})
-    .toArray();
+  const getAllInventory = await GetAllInventory();
   getAllInventory
     ? res.send(getAllInventory)
     : res.status(401).send({ message: "failed to load the data" });
@@ -19,16 +15,10 @@ inventory.get("/", async (req, res) => {
 
 inventory.get("/:id", async (req, res) => {
   const { id } = req.params;
-  const checkIdInsideDB = await client
-    .db("capstone")
-    .collection("inventory")
-    .findOne({ _id: new ObjectId(id) });
+  const checkIdInsideDB = await GetInventoryById(id);
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID " });
   else {
-    const getInventoryfromDB = await client
-      .db("capstone")
-      .collection("inventory")
-      .findOne({ _id: new ObjectId(id) });
+    const getInventoryfromDB = await GetInventoryByID(id);
     console.log(getInventoryfromDB);
     getInventoryfromDB
       ? res.send(getInventoryfromDB)
@@ -48,18 +38,13 @@ inventory.post("/", async (req, res) => {
   )
     res.status(401).send({ message: "Check input !!!!" });
   else {
-    const newInventory = await client
-      .db("capstone")
-      .collection("inventory")
-      .insertOne({
-        name,
-        units,
-        HSNCode,
-        billedQty: 0,
-        totalQty: Number(totalQty),
-        availableQty: Number(totalQty),
-        rate: Number(rate),
-      });
+    const newInventory = await createNewInventory(
+      name,
+      units,
+      HSNCode,
+      totalQty,
+      rate
+    );
 
     newInventory
       ? res.send({ message: "New Inventory added successfully" })
@@ -75,17 +60,11 @@ inventory.put("/:id", async (req, res) => {
 
   const { rate } = req.body;
   const { id } = req.params;
-  const checkIdInsideDB = await client
-    .db("capstone")
-    .collection("inventory")
-    .findOne({ _id: new ObjectId(id) });
+  const checkIdInsideDB = await GetInventory(id);
   console.log(checkIdInsideDB);
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid Id" });
   else {
-    const updatedEntryinsideDB = await client
-      .db("capstone")
-      .collection("inventory")
-      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { rate: rate } });
+    const updatedEntryinsideDB = await updateInventoryRate(id, rate);
     console.log(updatedEntryinsideDB);
     updatedEntryinsideDB
       ? res.send({ message: "Price updated successfully" })
@@ -102,10 +81,7 @@ inventory.delete("/:id", async (req, res) => {
     .findOne({ _id: new ObjectId(id) });
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid Id" });
   else {
-    const deleteInventory = await client
-      .db("capstone")
-      .collection("inventory")
-      .deleteOne({ _id: new ObjectId(id) });
+    const deleteInventory = await deleteInventorybyId(id);
     //   console.log(deleteInventory);
     deleteInventory.deletedCount == 1
       ? res.send({ message: "Deleted Inventory successfully" })
@@ -114,3 +90,57 @@ inventory.delete("/:id", async (req, res) => {
 });
 
 export default inventory;
+
+async function deleteInventorybyId(id) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .deleteOne({ _id: new ObjectId(id) });
+}
+
+async function updateInventoryRate(id, rate) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { rate: rate } });
+}
+
+async function GetInventory(id) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .findOne({ _id: new ObjectId(id) });
+}
+
+async function createNewInventory(name, units, HSNCode, totalQty, rate) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .insertOne({
+      name,
+      units,
+      HSNCode,
+      billedQty: 0,
+      totalQty: Number(totalQty),
+      availableQty: Number(totalQty),
+      rate: Number(rate),
+    });
+}
+
+async function GetInventoryByID(id) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .findOne({ _id: new ObjectId(id) });
+}
+
+async function GetInventoryById(id) {
+  return await client
+    .db("capstone")
+    .collection("inventory")
+    .findOne({ _id: new ObjectId(id) });
+}
+
+async function GetAllInventory() {
+  return await client.collection("inventory").find({}).toArray();
+}

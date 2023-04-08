@@ -102,7 +102,9 @@ workflow.put("/:id", async (req, res) => {
         ? res.send({ message: "PO sent for further Authorization !" })
         : res.status(401).send({ message: "Failed to send for authorizing" });
     } else
-      res.status(401).send({ message: "Please Check your Approval Status at First" });
+      res
+        .status(401)
+        .send({ message: "Please Check your Approval Status at First" });
   }
 });
 
