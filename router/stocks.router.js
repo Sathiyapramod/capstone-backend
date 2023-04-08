@@ -1,10 +1,11 @@
 import { client } from "../index.js";
 import express from "express";
+import auth from '../middleware/auth.js';
 import { ObjectId } from "mongodb";
 
 const stocks = express.Router();
 
-stocks.put("/:id", async (req, res) => {
+stocks.put("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const { newQty } = req.body;
   const checkIdInsideDB = await client

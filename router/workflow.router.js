@@ -1,11 +1,12 @@
 import express from "express";
 import { client } from "../index.js";
+import auth from "../middleware/auth.js";
 import { ObjectId } from "mongodb";
 
 const workflow = express.Router();
 
 //CREATE  new workflow
-workflow.post("/", async (req, res) => {
+workflow.post("/", auth, async (req, res) => {
   //admin can initiate workflow in the System flow while users are created
 
   const { empName } = req.body;
@@ -47,7 +48,7 @@ workflow.post("/", async (req, res) => {
 });
 
 //UPDATING a user for FOR APPROVAL
-workflow.put("/:id", async (req, res) => {
+workflow.put("/:id", auth, async (req, res) => {
   const { id } = req.params; //Concerned Username will be used to send approval
   console.log(id);
 
@@ -110,7 +111,7 @@ workflow.put("/:id", async (req, res) => {
 
 //remove from existing senders' workflow
 
-workflow.put("/update/:id", async (req, res) => {
+workflow.put("/update/:id", auth, async (req, res) => {
   const { id } = req.params;
   const { vendorName, grossTotal, gst, NetAmount } = req.body;
   console.log(id);
@@ -142,7 +143,7 @@ workflow.put("/update/:id", async (req, res) => {
 });
 
 //GET ALL WORKFLOWS
-workflow.get("/", async (req, res) => {
+workflow.get("/", auth, async (req, res) => {
   const getUserData = await client
     .db("capstone")
     .collection("workflow")
@@ -153,7 +154,7 @@ workflow.get("/", async (req, res) => {
     : res.status(401).send({ message: "failed to load workflow details" });
 });
 
-workflow.get("/:id", async (req, res) => {
+workflow.get("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const getInventoryfromDB = await client
     .db("capstone")

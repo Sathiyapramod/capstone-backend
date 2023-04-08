@@ -1,17 +1,18 @@
 import express from "express";
 import { client } from "../index.js";
+import auth from '../middleware/auth.js';
 import { ObjectId } from "mongodb";
 
 const purchase = express.Router();
 
-purchase.get("/", async (req, res) => {
+purchase.get("/", auth, async (req, res) => {
   const getPOfromDB = await getPurchaseOrders();
   getPOfromDB
     ? res.send(getPOfromDB)
     : res.status(401).send({ message: "failed to load PO details" });
 });
 
-purchase.get("/:id", async (req, res) => {
+purchase.get("/:id", auth, async (req, res) => {
   const { id } = req.params;
   const checkIdInsideDB = await getPurchaseOrderbyId(id);
   checkIdInsideDB
@@ -19,7 +20,7 @@ purchase.get("/:id", async (req, res) => {
     : res.status(401).send({ message: "failed to load customer data" });
 });
 
-purchase.post("/", async (req, res) => {
+purchase.post("/", auth, async (req, res) => {
   const {
     isApproved,
     isScrutinized,
