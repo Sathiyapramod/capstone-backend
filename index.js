@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import billingRouter from "./router/billing.router.js";
 import inventory from "./router/inventory.router.js";
 import customers from "./router/customers.router.js";
@@ -134,4 +134,36 @@ app.get("/billabstract", async (req, res) => {
     ])
     .toArray();
   res.send(getBillAbstract);
+});
+
+app.put("/stock/:id", async (req, res) => {
+  const { id } = req.params;
+  const { newStock } = req.body;
+  if (newStock < 0)
+    res.status(401).send({ message: "Enter Valid Quantity Only" });
+  else {
+    const checkIdInsideDB = await client
+      .db("capstone")
+      .collection("inventory")
+      .findOne({ _id: new ObjectId(id) });
+    if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID" });
+    else {
+      const updatedStockfromStores = await client
+        .db("capstone")
+        .collection("inventory")
+        .updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $inc: {
+              totalQty: Number(newStock),
+              availableQty: Number(newStock),
+            },
+          }
+        );
+      console.log(updatedStockfromStores);
+      updatedStockfromStores.modifiedCount != 0
+        ? res.send({ message: "Stock Successfully Updated !!" })
+        : res.status(401).send({ message: "Failed to Update the Stock" });
+    }
+  }
 });
