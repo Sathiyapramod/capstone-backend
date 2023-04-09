@@ -1,7 +1,7 @@
 import { client } from "../index.js";
 import express from "express";
 import { ObjectId } from "mongodb";
-import auth from '../middleware/auth.js';
+import auth from "../middleware/auth.js";
 
 const billing = express.Router();
 
@@ -19,7 +19,7 @@ billing.get("/", auth, async (req, res) => {
 
 //GET Bill by id
 
-billing.get("/:billnumber", auth,  async (req, res) => {
+billing.get("/:billnumber", auth, async (req, res) => {
   const { billnumber } = req.params;
   console.log(billnumber);
   const getBillfromDB = await getBillByid(billnumber);
@@ -37,6 +37,8 @@ billing.post("/", auth, async (req, res) => {
     items,
     date,
     grossTotal,
+    gstNumber,
+    billingAddress,
     gst,
     NetTotal,
   } = req.body;
@@ -46,6 +48,8 @@ billing.post("/", auth, async (req, res) => {
     creditPeriod,
     items,
     grossTotal,
+    gstNumber,
+    billingAddress,
     gst,
     NetTotal,
     date
@@ -149,6 +153,8 @@ async function createNewBill(
   items,
   grossTotal,
   gst,
+  gstNumber,
+  billingAddress,
   NetTotal,
   date
 ) {
@@ -162,6 +168,8 @@ async function createNewBill(
       items,
       grossTotal,
       gst,
+      gstNumber,
+      billingAddress,
       NetTotal,
       date: new Date(date),
     });
