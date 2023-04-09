@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import bcrypt from "bcrypt";
 import { MongoClient } from "mongodb";
 import users from "./router/stocks.router.js"
 import billingRouter from "./router/billing.router.js";
