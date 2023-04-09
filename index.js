@@ -29,6 +29,7 @@ await client.connect(); //This is a calling operation
 
 app.get("/", (request, response) => {
   console.log("Hello World");
+  response.send({message:"Hello world from Capstone backend !! "})
 });
 
 app.listen(PORT, () =>
