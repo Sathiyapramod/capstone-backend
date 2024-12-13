@@ -1,10 +1,13 @@
 import { client } from "../index.js";
 import express from "express";
+import * as dotenv from "dotenv";
+dotenv.config();
 import jwt from "jsonwebtoken";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 
 const others = express.Router();
+
 async function getHashedPassword(password) {
   const No_of_Rounds = 10;
   const salt = await bcrypt.genSalt(No_of_Rounds);
@@ -34,10 +37,10 @@ others.put("/stock/:id", async (req, res) => {
               totalQty: Number(newStock),
               availableQty: Number(newStock),
             },
-          }
+          },
         );
-      console.log(updatedStockfromStores);
-      updatedStockfromStores.modifiedCount != 0
+
+      updatedStockfromStores.modifiedCount !== 0
         ? res.send({ message: "Stock Successfully Updated !!" })
         : res.status(401).send({ message: "Failed to Update the Stock" });
     }
@@ -84,7 +87,7 @@ others.post("/signin", async (req, res) => {
   if (!checkUserinDB) res.status(401).send({ message: "User Doesn't exists" });
   else {
     const storedPassword = checkUserinDB.password;
-    console.log(storedPassword);
+
     const isPasswordValid = await bcrypt.compare(password, storedPassword);
     if (!isPasswordValid)
       res.status(401).send({ message: "Invalid credentials" });
@@ -102,8 +105,8 @@ others.post("/signin", async (req, res) => {
 //signup action
 others.post("/signup", async (req, res) => {
   const { username, email, password, jobRole } = req.body;
-  if (email == null || email == "")
-    response.status(401).send({ message: "Enter valid Email-addresss 😮" });
+  if (email === null || email === "")
+    res.status(401).send({ message: "Enter valid Email-addresss 😮" });
   else {
     const checkEmailfromDB = await client
       .db("capstone")
@@ -116,11 +119,11 @@ others.post("/signup", async (req, res) => {
     else {
       const hashedPassword = await getHashedPassword(password);
       let cadreID;
-      if (jobRole == "stores") cadreID = 1;
-      if (jobRole == "manager") cadreID = 2;
-      if (jobRole == "accounts") cadreID = 3;
-      if (jobRole == "head") cadreID = 4;
-      if (jobRole == "admin") cadreID = 5;
+      if (jobRole === "stores") cadreID = 1;
+      if (jobRole === "manager") cadreID = 2;
+      if (jobRole === "accounts") cadreID = 3;
+      if (jobRole === "head") cadreID = 4;
+      if (jobRole === "admin") cadreID = 5;
 
       const newUserSignup = await client
         .db("capstone")

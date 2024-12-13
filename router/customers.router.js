@@ -10,14 +10,14 @@ customers.post("/", async (req, res) => {
   const { customerName, contactNo, address, gstNumber } = req.body;
 
   if (
-    customerName == "" ||
-    customerName == null ||
-    contactNo == "" ||
-    contactNo == null ||
-    address == "" ||
-    address == null ||
-    gstNumber == "" ||
-    gstNumber == null
+    customerName === "" ||
+    customerName === null ||
+    contactNo === "" ||
+    contactNo === null ||
+    address === "" ||
+    address === null ||
+    gstNumber === "" ||
+    gstNumber === null
   )
     res.status(401).send({ message: "Invalid inputs" });
   else {
@@ -25,7 +25,7 @@ customers.post("/", async (req, res) => {
       customerName,
       contactNo,
       address,
-      gstNumber
+      gstNumber,
     );
     newCustomer
       ? res.send({ message: "New customer created successfully" })
@@ -64,7 +64,7 @@ customers.put("/:id", auth, async (req, res) => {
   if (!checkIdInsideDB) res.status(401).send({ message: "invalid Id" });
   else {
     const updatedCustomer = await updateCustomerAddressinDB(id, address);
-    console.log(updatedCustomer);
+
     updatedCustomer
       ? res.send({ message: "data updated successfully" })
       : res.status(401).send({ message: "failed to update data" });
@@ -101,7 +101,7 @@ async function updateCustomerAddressinDB(id, address) {
     .collection("customers")
     .findOneAndUpdate(
       { _id: new ObjectId(id) },
-      { $set: { address: address } }
+      { $set: { address: address } },
     );
 }
 

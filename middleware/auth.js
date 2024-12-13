@@ -1,13 +1,16 @@
+import * as dotenv from "dotenv";
+dotenv.config();
 import jwt from "jsonwebtoken";
 
-const auth = (request, response, next) => {
+const auth = (req, res, next) => {
   try {
-    const token = request.header("x-auth-token");
-    console.log(token);
+    const token = req.header("x-auth-token");
+
+    // eslint-disable-next-line no-undef
     jwt.verify(token, process.env.SECRET_KEY);
     next();
   } catch (err) {
-    response.status(401).send({ message: err.message });
+    res.status(401).send({ message: err.message });
   }
 };
 

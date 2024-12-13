@@ -20,7 +20,6 @@ inventory.get("/:id", auth, async (req, res) => {
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid ID " });
   else {
     const getInventoryfromDB = await GetInventoryByID(id);
-    console.log(getInventoryfromDB);
     getInventoryfromDB
       ? res.send(getInventoryfromDB)
       : res.status(401).send({ message: "failed to load the data" });
@@ -32,11 +31,11 @@ inventory.get("/:id", auth, async (req, res) => {
 inventory.post("/", auth, async (req, res) => {
   const { name, units, HSNCode, totalQty, rate } = req.body;
   if (
-    units == null ||
-    units == "" ||
-    HSNCode == null ||
-    totalQty == null ||
-    rate == null
+    units === null ||
+    units === "" ||
+    HSNCode === null ||
+    totalQty === null ||
+    rate === null
   )
     res.status(401).send({ message: "Check input !!!!" });
   else {
@@ -45,7 +44,7 @@ inventory.post("/", auth, async (req, res) => {
       units,
       HSNCode,
       totalQty,
-      rate
+      rate,
     );
 
     newInventory
@@ -53,7 +52,6 @@ inventory.post("/", auth, async (req, res) => {
       : res.status(401).send({ message: "failed to load the data" });
   }
 });
-
 
 //UPDATE inventory
 
@@ -64,17 +62,16 @@ inventory.put("/:id", auth, async (req, res) => {
   const { rate } = req.body;
   const { id } = req.params;
   const checkIdInsideDB = await GetInventory(id);
-  console.log(checkIdInsideDB);
+
   if (!checkIdInsideDB) res.status(401).send({ message: "Invalid Id" });
   else {
     const updatedEntryinsideDB = await updateInventoryRate(id, rate);
-    console.log(updatedEntryinsideDB);
+
     updatedEntryinsideDB
       ? res.send({ message: "Price updated successfully" })
       : res.status(401).send({ message: "failed to update the data" });
   }
 });
-
 
 //DELETE inventory
 
@@ -88,7 +85,7 @@ inventory.delete("/:id", auth, async (req, res) => {
   else {
     const deleteInventory = await deleteInventorybyId(id);
     //   console.log(deleteInventory);
-    deleteInventory.deletedCount == 1
+    deleteInventory.deletedCount === 1
       ? res.send({ message: "Deleted Inventory successfully" })
       : res.status(401).send({ message: "failed to delete inventory" });
   }

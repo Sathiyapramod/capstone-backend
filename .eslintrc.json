@@ -1,0 +1,27 @@
+{
+  "env": {
+    "browser": true,
+    "module": true,
+    "es2021": true
+  },
+
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "ignorePatterns": ["build", ".eslintrc.json"],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-undef": "off",
+    "no-console": "warn",
+    "prettier/prettier": ["warn", {}, { "usePrettierrc": true }],
+    // added newly
+    "no-duplicate-imports": "warn",
+    "valid-typeof": "warn",
+
+    "eqeqeq": "warn",
+    "no-delete-var": "warn",
+    "no-empty-function": "warn",
+    "no-var": "warn"
+  }
+}

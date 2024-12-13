@@ -1,0 +1,4 @@
+node_modules/
+.scannerwork/
+test
+sonar-project.properties

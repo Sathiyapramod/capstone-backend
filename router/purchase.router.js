@@ -1,6 +1,6 @@
 import express from "express";
 import { client } from "../index.js";
-import auth from '../middleware/auth.js';
+import auth from "../middleware/auth.js";
 import { ObjectId } from "mongodb";
 
 const purchase = express.Router();
@@ -33,7 +33,7 @@ purchase.post("/", auth, async (req, res) => {
     POItems,
   } = req.body;
 
-  if (vendorName == null || POItems == null || NetAmount == 0)
+  if (vendorName === null || POItems === null || NetAmount === 0)
     res.status(401).send({ message: "Invalid entries. pls check again" });
   else {
     const newPurchaseOrder = await createNewPurchaseOrder(
@@ -45,7 +45,7 @@ purchase.post("/", auth, async (req, res) => {
       grossTotal,
       gst,
       NetAmount,
-      POItems
+      POItems,
     );
     newPurchaseOrder
       ? res.send({ message: "New PO Created" })
@@ -63,14 +63,13 @@ purchase.delete("/:id", async (req, res) => {
     res.status(401).send({ message: "Invalid ID . Try again" });
   else {
     const deleteBillfromDB = await deletePurchaseOrderbyId(id);
-    deleteBillfromDB.deletedCount == 1
+    deleteBillfromDB.deletedCount === 1
       ? res.send({ message: "Bill Deleted Successfully" })
       : res.status(401).send({ message: "Failed to delete Bill" });
   }
 });
 
 export default purchase;
-
 
 async function deletePurchaseOrderbyId(id) {
   return await client
@@ -88,7 +87,7 @@ async function createNewPurchaseOrder(
   grossTotal,
   gst,
   NetAmount,
-  POItems
+  POItems,
 ) {
   return await client
     .db("capstone")
